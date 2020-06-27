@@ -1,8 +1,16 @@
 const router = require('express').Router();
-let users = require('../data/users.json');
+// let users = require('../data/users.json');
+const fsPromises = require('fs').promises;
 
 router.get('/users', (req, res) => {
-  res.send(users);
+  fsPromises.readFile('./data/users.json', { encoding: 'utf8' })
+    .then((data) => {
+      const obj = JSON.parse(data);
+      res.type('application/json').send(obj);
+    })
+    .catch((err) => {
+      res.status(500).send({ message: err.message });
+    });
 });
 
 router.get('/users/:id', (req, res) => {
