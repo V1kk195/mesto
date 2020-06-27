@@ -1,5 +1,4 @@
 const router = require('express').Router();
-// let users = require('../data/users.json');
 const fsPromises = require('fs').promises;
 
 router.get('/users', (req, res) => {
@@ -14,14 +13,19 @@ router.get('/users', (req, res) => {
 });
 
 router.get('/users/:id', (req, res) => {
-  users = JSON.parse(JSON.stringify(users).split('"_id":').join('"id":'));
-  const user = users.find((elem) => elem.id === req.params.id);
-  if (user === undefined) {
-    res.status(404);
-    res.send({ message: 'Нет пользователя с таким id' });
-  } else {
-    res.send(JSON.stringify(user));
-  }
+  fsPromises.readFile('./data/users.json', { encoding: 'utf8' })
+    .then((data) => {
+      const obj = JSON.parse(data.split('"_id":').join('"id":'));
+      const user = obj.find((elem) => elem.id === req.params.id);
+      if (user === undefined) {
+        res.status(404).send({ message: 'Нет пользователя с таким id' });
+      } else {
+        res.type('application/json').send(user);
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({ message: err.message });
+    });
 });
 
 module.exports = router;
