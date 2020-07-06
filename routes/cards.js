@@ -1,15 +1,10 @@
 const router = require('express').Router();
-const fsPromises = require('fs').promises;
+const { getCards, createCard, deleteCard } = require('../controllers/cards');
 
-router.get('/', (req, res) => {
-  fsPromises.readFile('./data/cards.json', { encoding: 'utf8' })
-    .then((data) => {
-      const obj = JSON.parse(data);
-      res.type('application/json').send(obj);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-});
+router.get('/cards', getCards);
+
+router.post('/cards', createCard);
+
+router.delete('/cards/:cardId', deleteCard);
 
 module.exports = router;

@@ -8,13 +8,13 @@ module.exports.getCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  Cards.create({ name, link })
+  Cards.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
 module.exports.deleteCard = (req, res) => {
-  Cards.findByIdAndRemove(req.params.id)
-    .then((card) => res.send({ data: card }))
+  Cards.findByIdAndRemove(req.params.cardId)
+    .then(() => res.send({ message: 'card is removed' }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
