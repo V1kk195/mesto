@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const fsPromises = require('fs').promises;
+const { getUsers, getUser, createUser } = require('../controllers/users');
 
 router.get('/users', (req, res) => {
   fsPromises.readFile('./data/users.json', { encoding: 'utf8' })
@@ -27,5 +28,7 @@ router.get('/users/:id', (req, res) => {
       res.status(500).send({ message: err.message });
     });
 });
+
+router.post('/users', createUser);
 
 module.exports = router;
