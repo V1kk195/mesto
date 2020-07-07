@@ -1,10 +1,11 @@
 {
   "name": "project12",
   "version": "1.0.0",
-  "description": "",
+  "description": "server for Mesto project",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "app.js",
+    "dev": "nodemon app.js"
   },
   "author": "Victoria Fedotkina",
   "license": "ISC",
