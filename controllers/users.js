@@ -8,6 +8,9 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   Users.findById(req.params.id)
+    .orFail(() => {
+      res.status(404).send({ message: `User ${req.params.id} is not found` });
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
