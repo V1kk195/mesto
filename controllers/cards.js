@@ -14,8 +14,12 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Cards.findByIdAndRemove(req.params.cardId)
-    .then(() => res.send({ message: 'card is removed' }))
+  Cards.findById(req.params.cardId)
+    .orFail(() => {
+      res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+    })
+    .deleteOne({ _id: req.params.cardId })
+    .then((data) => res.send({ message: data }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
