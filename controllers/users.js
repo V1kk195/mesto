@@ -32,8 +32,17 @@ module.exports.updateUser = (req, res) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      res.status(404).send({ message: `User ${req.user._id} is not found` });
+    })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: err.message });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res) => {
@@ -46,6 +55,15 @@ module.exports.updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      res.status(404).send({ message: `User ${req.user._id} is not found` });
+    })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: err.message });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
