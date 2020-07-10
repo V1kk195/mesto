@@ -8,11 +8,15 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   Users.findById(req.params.id)
-    .orFail(() => {
-      res.status(404).send({ message: `User ${req.params.id} is not found` });
-    })
+    .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `User ${req.params.id} is not found` });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -32,12 +36,12 @@ module.exports.updateUser = (req, res) => {
       runValidators: true,
     },
   )
-    .orFail(() => {
-      res.status(404).send({ message: `User ${req.user._id} is not found` });
-    })
+    .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `User ${req.user._id} is not found` });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
@@ -55,12 +59,12 @@ module.exports.updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .orFail(() => {
-      res.status(404).send({ message: `User ${req.user._id} is not found` });
-    })
+    .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `User ${req.user._id} is not found` });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
