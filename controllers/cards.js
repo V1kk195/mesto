@@ -21,12 +21,16 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Cards.findById(req.params.cardId)
-    .orFail(() => {
-      res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
-    })
+    .orFail()
     .deleteOne({ _id: req.params.cardId })
-    .then((data) => res.send({ message: data }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then(() => res.send({ message: `Card ${req.params.cardId} has been deleted` }))
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
 
 module.exports.addLike = (req, res) => {
