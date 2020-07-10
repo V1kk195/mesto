@@ -35,11 +35,15 @@ module.exports.addLike = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => {
-      res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
-    })
+    .orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
 
 module.exports.removeLike = (req, res) => {
@@ -48,9 +52,13 @@ module.exports.removeLike = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => {
-      res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
-    })
+    .orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
 };
