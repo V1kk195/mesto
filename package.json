@@ -1,10 +1,10 @@
 {
-  "name": "project12",
+  "name": "project13",
   "version": "1.0.0",
   "description": "server for Mesto project",
   "main": "index.js",
   "scripts": {
-    "start": "app.js",
+    "start": "node app.js",
     "dev": "nodemon app.js"
   },
   "author": "Victoria Fedotkina",
@@ -16,6 +16,8 @@
     "nodemon": "^2.0.4"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.21"
   }
 }
