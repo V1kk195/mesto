@@ -22,6 +22,20 @@ const userSchema = new mongoose.Schema({
       message: (props) => `${props.value} is not a valid URL!`,
     },
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: (val) => validator.isEmail(val),
+      message: (props) => `${props.value} is not a valid e-mail!`,
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
 });
 
 module.exports = mongoose.model('user', userSchema);
