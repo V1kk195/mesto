@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    payload = jwt.verify(token, 'e2802db01c7272c6f24c8177aab29fa3d0444425e72f473684dc4428878194e3');
   } catch (err) {
     return res
       .status(401)
