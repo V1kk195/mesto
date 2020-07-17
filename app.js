@@ -26,14 +26,6 @@ app.post('/signup', createUser);
 
 app.use(auth);
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5f036d8dec9a334e342757ba',
-  };
-
-  next();
-});
-
 app.use('/', users);
 app.use('/', cards);
 app.all('*', (req, res) => {
