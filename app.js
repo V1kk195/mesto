@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const { login, createUser } = require('./controllers/users');
 const users = require('./routes/users');
 const cards = require('./routes/cards');
+const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 
@@ -22,6 +23,8 @@ app.use(bodyParser.json());
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use((req, res, next) => {
   req.user = {
