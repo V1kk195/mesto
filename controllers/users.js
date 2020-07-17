@@ -25,6 +25,11 @@ module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
+  if (!password) {
+    return res.status(400).send({ message: 'Нужно ввести пароль' });
+  }
+
   bcrypt.hash(password, 10)
     .then((hash) => Users.create({
       name, about, avatar, email, password: hash,
