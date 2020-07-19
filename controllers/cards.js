@@ -32,6 +32,8 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else if (err.name === 'Error') {
+        res.status(403).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
       }
