@@ -15,6 +15,8 @@ module.exports.getUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: `User ${req.params.id} is not found` });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.params.id} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -30,7 +32,7 @@ module.exports.createUser = (req, res) => {
     return res.status(400).send({ message: 'Нужно ввести пароль' });
   }
 
-  bcrypt.hash(password, 10)
+  return bcrypt.hash(password, 10)
     .then((hash) => Users.create({
       name, about, avatar, email, password: hash,
     }))
@@ -69,6 +71,8 @@ module.exports.updateUser = (req, res) => {
         res.status(404).send({ message: `User ${req.user._id} is not found` });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.user._id} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -92,6 +96,8 @@ module.exports.updateAvatar = (req, res) => {
         res.status(404).send({ message: `User ${req.user._id} is not found` });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.user._id} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }

@@ -34,6 +34,8 @@ module.exports.deleteCard = (req, res) => {
         res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
       } else if (err.name === 'Error') {
         res.status(403).send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -41,11 +43,11 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.addLike = (req, res) => {
-  if (!req.params.cardId.match(/^[a-fA-F0-9]{24}$/)) {
-    return res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
-  }
+  // if (!req.params.cardId.match(/^[a-fA-F0-9]{24}$/)) {
+  //   return res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
+  // }
 
-  return Cards.findByIdAndUpdate(
+  Cards.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
@@ -55,6 +57,8 @@ module.exports.addLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -62,11 +66,7 @@ module.exports.addLike = (req, res) => {
 };
 
 module.exports.removeLike = (req, res) => {
-  if (!req.params.cardId.match(/^[a-fA-F0-9]{24}$/)) {
-    return res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
-  }
-
-  return Cards.findByIdAndUpdate(
+  Cards.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
@@ -76,6 +76,8 @@ module.exports.removeLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
       } else {
         res.status(500).send({ message: err.message });
       }
