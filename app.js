@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 // const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 
 const { login, createUser } = require('./controllers/users');
 const users = require('./routes/users');
@@ -34,6 +35,8 @@ app.use('/', cards);
 app.all('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
