@@ -1,5 +1,6 @@
 const Cards = require('../models/cards');
 const NotFoundError = require('../errors/not-found-err');
+const CastError = require('../errors/cast-error');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -36,7 +37,7 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (err.name === 'Error') {
         res.status(403).send({ message: err.message });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
+        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -59,7 +60,7 @@ module.exports.addLike = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
+        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -78,7 +79,7 @@ module.exports.removeLike = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
+        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         res.status(500).send({ message: err.message });
       }
