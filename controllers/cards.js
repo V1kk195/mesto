@@ -1,5 +1,5 @@
 const Cards = require('../models/cards');
-const NotFoundErr = require('../errors/not-found-err');
+const NotFoundError = require('../errors/not-found-err');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -20,7 +20,7 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Cards.findById(req.params.cardId)
     .orFail()
     .then((card) => {
@@ -32,7 +32,7 @@ module.exports.deleteCard = (req, res) => {
     .then(() => res.send({ message: `Card ${req.params.cardId} has been deleted` }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+        next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'Error') {
         res.status(403).send({ message: err.message });
       } else if (err.name === 'CastError') {
@@ -43,7 +43,7 @@ module.exports.deleteCard = (req, res) => {
     });
 };
 
-module.exports.addLike = (req, res) => {
+module.exports.addLike = (req, res, next) => {
   // if (!req.params.cardId.match(/^[a-fA-F0-9]{24}$/)) {
   //   return res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
   // }
@@ -57,7 +57,7 @@ module.exports.addLike = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+        next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
       } else {
@@ -66,7 +66,7 @@ module.exports.addLike = (req, res) => {
     });
 };
 
-module.exports.removeLike = (req, res) => {
+module.exports.removeLike = (req, res, next) => {
   Cards.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -76,7 +76,7 @@ module.exports.removeLike = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `Card ${req.params.cardId} is not found` });
+        next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
       } else {
