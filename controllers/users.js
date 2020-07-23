@@ -18,7 +18,7 @@ module.exports.getUser = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.params.id} is invalid ID` });
+        next(new CastError(`Неправильный формат ID ${req.params.id}`));
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -74,7 +74,7 @@ module.exports.updateUser = (req, res, next) => {
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.user._id} is invalid ID` });
+        next(new CastError(`Неправильный формат ID ${req.params.id}`));
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -99,7 +99,7 @@ module.exports.updateAvatar = (req, res, next) => {
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.user._id} is invalid ID` });
+        next(new CastError(`Неправильный формат ID ${req.params.id}`));
       } else {
         res.status(500).send({ message: err.message });
       }
