@@ -1,20 +1,22 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
+const NotFoundError = require('../errors/not-found-err');
+const CastError = require('../errors/cast-error');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   Users.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   Users.findById(req.params.id)
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.params.id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: `${req.params.id} is invalid ID` });
       } else {
@@ -54,7 +56,7 @@ module.exports.createUser = (req, res) => {
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
@@ -68,7 +70,7 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.user._id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.user._id} не существует`));
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else if (err.name === 'CastError') {
@@ -79,7 +81,7 @@ module.exports.updateUser = (req, res) => {
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
@@ -93,7 +95,7 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.user._id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
       } else if (err.name === 'CastError') {
