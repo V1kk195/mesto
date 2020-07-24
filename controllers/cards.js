@@ -1,6 +1,7 @@
 const Cards = require('../models/cards');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
+const ForbiddenError = require('../errors/forbidden-error');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -26,7 +27,7 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail()
     .then((card) => {
       if (!card.owner.equals(req.user._id)) {
-        return Promise.reject(new Error('Вы пытаетесь удалить чужую карточку'));
+        return Promise.reject(new ForbiddenError('Вы пытаетесь удалить чужую карточку'));
       }
       return Cards.deleteOne(card);
     })
@@ -34,8 +35,6 @@ module.exports.deleteCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
-      } else if (err.name === 'Error') {
-        res.status(403).send({ message: err.message });
       } else if (err.name === 'CastError') {
         next(new BadRequestError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
