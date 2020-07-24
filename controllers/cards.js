@@ -1,6 +1,7 @@
 const Cards = require('../models/cards');
 const NotFoundError = require('../errors/not-found-err');
 const CastError = require('../errors/cast-error');
+const ValidationError = require('../errors/validation-error');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -8,15 +9,15 @@ module.exports.getCards = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Cards.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new ValidationError(err.message));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
@@ -39,7 +40,7 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
@@ -62,7 +63,7 @@ module.exports.addLike = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
@@ -81,7 +82,7 @@ module.exports.removeLike = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
