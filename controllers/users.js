@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
 
 module.exports.getUsers = (req, res, next) => {
   Users.find({})
@@ -31,7 +32,7 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   if (!password || !password.trim()) {
-    return res.status(400).send({ message: 'Нужно ввести пароль' });
+    throw new BadRequestError('Нужно ввести пароль');
   }
 
   return bcrypt.hash(password, 10)
@@ -49,7 +50,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(err.message));
       } else if (err.name === 'MongoError' && err.code === 11000) {
-        res.status(409).send({ message: `User ${email} already exists` });
+        next(new ConflictError(`Пользователь ${email} уже существует`));
       } else {
         next(err);
       }
@@ -106,7 +107,7 @@ module.exports.updateAvatar = (req, res, next) => {
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return Users.findUserByCredentials(email, password)
     .then((user) => {
@@ -122,7 +123,5 @@ module.exports.login = (req, res) => {
         })
         .end();
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
