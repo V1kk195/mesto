@@ -1,7 +1,6 @@
 const Cards = require('../models/cards');
-const NotFoundError = require('../errors/not-found-err');
-const CastError = require('../errors/cast-error');
-const ValidationError = require('../errors/validation-error');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -15,7 +14,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError(err.message));
+        next(new BadRequestError(err.message));
       } else {
         next(err);
       }
@@ -38,7 +37,7 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (err.name === 'Error') {
         res.status(403).send({ message: err.message });
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
+        next(new BadRequestError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         next(err);
       }
@@ -61,7 +60,7 @@ module.exports.addLike = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
+        next(new BadRequestError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         next(err);
       }
@@ -80,7 +79,7 @@ module.exports.removeLike = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Карточка ${req.params.cardId} не существует`));
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID карточки ${req.params.cardId}`));
+        next(new BadRequestError(`Неправильный формат ID карточки ${req.params.cardId}`));
       } else {
         next(err);
       }

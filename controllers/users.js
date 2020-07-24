@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
-const NotFoundError = require('../errors/not-found-err');
-const CastError = require('../errors/cast-error');
-const ValidationError = require('../errors/validation-error');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
 
 module.exports.getUsers = (req, res, next) => {
   Users.find({})
@@ -19,7 +18,7 @@ module.exports.getUser = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
         next(err);
       }
@@ -31,7 +30,7 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password) {
+  if (!password || !password.trim()) {
     return res.status(400).send({ message: 'Нужно ввести пароль' });
   }
 
@@ -48,7 +47,7 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError(err.message));
+        next(new BadRequestError(err.message));
       } else if (err.name === 'MongoError' && err.code === 11000) {
         res.status(409).send({ message: `User ${email} already exists` });
       } else {
@@ -73,9 +72,9 @@ module.exports.updateUser = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.user._id} не существует`));
       } else if (err.name === 'ValidationError') {
-        next(new ValidationError(err.message));
+        next(new BadRequestError(err.message));
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
         next(err);
       }
@@ -98,9 +97,9 @@ module.exports.updateAvatar = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'ValidationError') {
-        next(new ValidationError(err.message));
+        next(new BadRequestError(err.message));
       } else if (err.name === 'CastError') {
-        next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
         next(err);
       }
