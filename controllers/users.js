@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
 const NotFoundError = require('../errors/not-found-err');
 const CastError = require('../errors/cast-error');
+const ValidationError = require('../errors/validation-error');
 
 module.exports.getUsers = (req, res, next) => {
   Users.find({})
@@ -20,12 +21,12 @@ module.exports.getUser = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -47,11 +48,11 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new ValidationError(err.message));
       } else if (err.name === 'MongoError' && err.code === 11000) {
         res.status(409).send({ message: `User ${email} already exists` });
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
@@ -72,11 +73,11 @@ module.exports.updateUser = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.user._id} не существует`));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new ValidationError(err.message));
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
@@ -97,11 +98,11 @@ module.exports.updateAvatar = (req, res, next) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new ValidationError(err.message));
       } else if (err.name === 'CastError') {
         next(new CastError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
