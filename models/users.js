@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (val) => validator.isURL(val),
+      validator: validator.isURL,
       message: (props) => `${props.value} is not a valid URL!`,
     },
   },
@@ -29,14 +29,13 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     validate: {
-      validator: (val) => validator.isEmail(val),
+      validator: validator.isEmail,
       message: (props) => `${props.value} is not a valid e-mail!`,
     },
   },
   password: {
     type: String,
     required: [true, 'Нужно ввести пароль'],
-    minlength: 8,
     select: false,
   },
 });
