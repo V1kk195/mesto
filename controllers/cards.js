@@ -44,10 +44,6 @@ module.exports.deleteCard = (req, res, next) => {
 };
 
 module.exports.addLike = (req, res, next) => {
-  // if (!req.params.cardId.match(/^[a-fA-F0-9]{24}$/)) {
-  //   return res.status(400).send({ message: `${req.params.cardId} is invalid ID` });
-  // }
-
   Cards.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
