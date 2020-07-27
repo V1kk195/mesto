@@ -25,6 +25,25 @@ const validateUserCreate = celebrate({
   }),
 });
 
+const validateParamsUserId = celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
+  }),
+});
+
+const validateUserInfo = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+});
+
+const validateAvatar = celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().custom(validateUrl),
+  }),
+});
+
 const validateCard = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
@@ -41,6 +60,9 @@ const validateParamsCardId = celebrate({
 module.exports = {
   validateUserAuth,
   validateUserCreate,
+  validateParamsUserId,
+  validateUserInfo,
+  validateAvatar,
   validateCard,
   validateParamsCardId,
 };
