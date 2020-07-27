@@ -25,7 +25,22 @@ const validateUserCreate = celebrate({
   }),
 });
 
+const validateCard = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().custom(validateUrl),
+  }),
+});
+
+const validateParamsCardId = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24),
+  }),
+});
+
 module.exports = {
   validateUserAuth,
   validateUserCreate,
+  validateCard,
+  validateParamsCardId,
 };
