@@ -2,34 +2,40 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
 
-module.exports.getUsers = (req, res) => {
+const { NODE_ENV, JWT_SECRET } = process.env;
+
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+
+module.exports.getUsers = (req, res, next) => {
   Users.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   Users.findById(req.params.id)
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.params.id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.params.id} is invalid ID` });
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password) {
-    return res.status(400).send({ message: 'Нужно ввести пароль' });
+  if (!password || !password.trim()) {
+    throw new BadRequestError('Нужно ввести пароль');
   }
 
   return bcrypt.hash(password, 10)
@@ -45,16 +51,16 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new BadRequestError(err.message));
       } else if (err.name === 'MongoError' && err.code === 11000) {
-        res.status(409).send({ message: `User ${email} already exists` });
+        next(new ConflictError(`Пользователь ${email} уже существует`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
@@ -68,18 +74,18 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.user._id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.user._id} не существует`));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new BadRequestError(err.message));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.user._id} is invalid ID` });
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
@@ -93,34 +99,33 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: `User ${req.user._id} is not found` });
+        next(new NotFoundError(`Пользователь ${req.params.id} не существует`));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new BadRequestError(err.message));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `${req.user._id} is invalid ID` });
+        next(new BadRequestError(`Неправильный формат ID юзера ${req.params.id}`));
       } else {
-        res.status(500).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return Users.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'e2802db01c7272c6f24c8177aab29fa3d0444425e72f473684dc4428878194e3',
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: 3600 * 24 * 7 },
       );
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
+          sameSite: true,
         })
         .end();
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
